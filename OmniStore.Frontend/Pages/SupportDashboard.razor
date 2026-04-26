@@ -1,0 +1,93 @@
+﻿@page "/support"
+@using Microsoft.AspNetCore.SignalR.Client
+@using OmniStore.Frontend.Services
+@inject NavigationManager Navigation
+@inject IJSRuntime JS 
+<div class="container mt-4 mb-5">
+    <div class="d-flex justify-content-between align-items-center mb-4">
+        <h2><i class="bi bi-headset text-primary"></i> Live Support Hub</h2>
+        <span class="badge bg-success">Connected</span>
+    </div>
+
+    <div class="row justify-content-center">
+        <div class="col col-md-10">
+            <div class="card shadow-sm border-0 mb-3">
+                <div class="chat-window" @ref="chatWindowRef">
+                    @if(!messages.Any())
+                    {
+                        <div class="card shadow-sm border-0 mt-5">
+                            <i class="bi bi-chat-dots" style="font-size: 2rem;"></i>
+                            <p>No messages yet. Start the conversation</p>
+                        </div>
+                    }
+
+                    @foreach(var msg in messages)
+                    {
+                        var isSystem = msg.User.ToLower() == "system";
+                        var bubbleClass = isSystem ? "bubble-system" : "bubble-user";
+                        <div class="chat-bubble @bubbleClass">
+                            <div class="sender-name">@(isSystem ? "OmniStore Automated System" : $"Order #{msg.User}")</div>
+                            <div>@msg.Text</div>
+                        </div>
+                    }
+                </div>
+            </div>
+            <div class="chat-input-area d-flex gap-2">
+                <input @bind="orderInput" class="form-control" placeholder="Order ID..." style="max-width: 120px;" />
+                <input @bind="messageInput" @onkeyup="HandleKeyPress" class="form-control" placeholder="Type a message..." />
+                <button @onclick="Send" class="btn btn-primary px-4" disabled="@(!IsConnected)"><i class="bi bi-send-fill"></i>Send</button>
+            </div>
+        </div>
+    </div>
+</div>
+
+
+@code {
+    private HubConnection? hubConnection;
+    private List<(string User, string Text)> messages = new();
+    private string orderInput = "System";
+    private string messageInput = "";
+    private ElementReference chatWindowRef;
+
+    protected override async Task OnInitializedAsync()
+    {
+        if (!AuthState.IsLoggedIn)
+        {
+            Navigation.NavigateTo("/login");
+            return;
+        }
+        hubConnection = new HubConnectionBuilder()
+            .WithUrl("https://localhost:7292/supporthub", options =>
+            {
+                options.AccessTokenProvider = () => Task.FromResult(AuthState.Token);
+            })
+            .Build();
+        
+        hubConnection.On<string, string>("ReceiveSupportMessage", async (orderId, message) => 
+        {
+            messages.Add((orderId, message));
+            InvokeAsync(StateHasChanged);
+            await JS.InvokeVoidAsync("scrollToBottom", chatWindowRef);
+        });
+        await hubConnection.StartAsync();
+    }
+
+    private async Task Send()
+    {
+        if (hubConnection is not null && !string.IsNullOrWhiteSpace(messageInput))
+        {
+            await hubConnection.SendAsync("SendMessageToSupport", orderInput, messageInput);
+            messageInput = "";
+        }
+    }
+
+    private async Task HandleKeyPress(KeyboardEventArgs e)
+    {
+        if (e.Key == "Enter")
+        {
+            await Send();
+        }
+    }
+
+    public bool IsConnected => hubConnection?.State == HubConnectionState.Connected;
+}

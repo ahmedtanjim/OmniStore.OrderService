@@ -1,4 +1,5 @@
 ﻿using AutoMapper;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 using OmniStore.OrderService.Data;
@@ -51,11 +52,13 @@ namespace OmniStore.OrderService.Controllers
             return Ok(order);
         }
 
+
+        [Authorize]
         [HttpPost("{id}/invoice")]
         public async Task<IActionResult> UploadInvoice(int id, IFormFile file)
         {
             if(file == null || file.Length == 0)
-            {
+            { 
                 return BadRequest("No file uploaded.");
             }
 

@@ -1,4 +1,5 @@
 <Solution>
+  <Project Path="OmniStore.Frontend/OmniStore.Frontend.csproj" Id="6429dacc-c45b-44af-a0ed-8135b2c64098" />
   <Project Path="OmniStore.OrderService/OmniStore.OrderService.csproj" />
   <Project Path="OmniStore.Worker/OmniStore.Worker.csproj" Id="4a353d3b-1c9d-4c6e-b7ca-c5e849d0feaf" />
 </Solution>

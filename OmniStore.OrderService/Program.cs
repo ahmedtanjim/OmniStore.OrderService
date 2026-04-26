@@ -1,3 +1,4 @@
+using Microsoft.AspNetCore.Identity;
 using Microsoft.EntityFrameworkCore;
 using OmniStore.OrderService.Data;
 using OmniStore.OrderService.Hubs;
@@ -15,6 +16,9 @@ builder.Services.AddSwaggerGen();
 
 builder.Services.AddDbContext<AppDbContext>(options =>
     options.UseSqlServer(builder.Configuration.GetConnectionString("DefaultConnection")));
+builder.Services.AddAuthorization();
+builder.Services.AddIdentityApiEndpoints<IdentityUser>()
+    .AddEntityFrameworkStores<AppDbContext>();
 builder.Services.AddAutoMapper(config =>
 {
     config.AddProfile<OrderProfile>();
@@ -32,7 +36,6 @@ builder.Services.AddCors(options => {
 builder.Services.AddScoped<IBlobService, BlobService>(); 
 var app = builder.Build();
 
-// Configure the HTTP request pipeline.
 if (app.Environment.IsDevelopment())
 {
     app.UseSwagger();
@@ -48,5 +51,7 @@ app.UseAuthorization();
 app.MapControllers();
 
 app.MapHub<SupportHub>("/supportHub");
+
+app.MapIdentityApi<IdentityUser>();
 
 app.Run();

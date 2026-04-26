@@ -1,6 +1,9 @@
-﻿using Microsoft.AspNetCore.SignalR;
+﻿using Microsoft.AspNetCore.Authorization;
+using Microsoft.AspNetCore.SignalR;
+
 namespace OmniStore.OrderService.Hubs
 {
+    [Authorize]
     public class SupportHub : Hub
     {
         public async Task SendMessageToSupport(string orderId, string message)
@@ -10,7 +13,8 @@ namespace OmniStore.OrderService.Hubs
 
         public override Task OnConnectedAsync()
         {
-            Console.WriteLine($"Client connected: {Context.ConnectionId}");
+            var user = Context.User?.Identity?.Name ?? "Unknown User";
+            Console.WriteLine($" {user} connected: {Context.ConnectionId}");
             return base.OnConnectedAsync();
         }
     }
