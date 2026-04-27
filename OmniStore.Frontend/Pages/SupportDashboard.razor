@@ -57,7 +57,7 @@
             return;
         }
         hubConnection = new HubConnectionBuilder()
-            .WithUrl("https://localhost:7292/supporthub", options =>
+            .WithUrl("/supporthub", options =>
             {
                 options.AccessTokenProvider = () => Task.FromResult(AuthState.Token);
             })
