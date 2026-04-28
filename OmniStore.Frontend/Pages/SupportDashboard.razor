@@ -67,6 +67,7 @@
         {
             messages.Add((orderId, message));
             InvokeAsync(StateHasChanged);
+
             await JS.InvokeVoidAsync("scrollToBottom", chatWindowRef);
         });
         await hubConnection.StartAsync();
