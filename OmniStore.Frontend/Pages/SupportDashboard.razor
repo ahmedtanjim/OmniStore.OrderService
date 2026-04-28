@@ -57,7 +57,7 @@
             return;
         }
         hubConnection = new HubConnectionBuilder()
-            .WithUrl("/supporthub", options =>
+            .WithUrl("https://omnistore-api-c6h3bsbdb6dtecbk.canadacentral-01.azurewebsites.net/supporthub", options =>
             {
                 options.AccessTokenProvider = () => Task.FromResult(AuthState.Token);
             })
